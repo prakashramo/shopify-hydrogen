@@ -65,6 +65,7 @@ export default function Homepage() {
   return (
     <div className="home">
       <FeaturedCollection collection={data.featuredCollection} />
+      <h5> Hydrogen is executed successfully ...</h5>
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );

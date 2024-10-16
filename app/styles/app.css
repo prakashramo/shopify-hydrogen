@@ -484,3 +484,52 @@ button.reset:hover:not(:has(> *)) {
 .account-logout {
   display: inline-block;
 }
+.filters-container {
+  width: 250px;
+  float: left;
+  margin-right: 20px;
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-section h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.filter-section label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.filter-section input[type="number"] {
+  width: 100px;
+  margin-right: 10px;
+}
+
+.sort-section {
+  margin-bottom: 20px;
+}
+
+.sort-section label {
+  margin-right: 10px;
+}
+
+.products-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.product-card {
+  width: 200px;
+  text-align: center;
+}
+
+.product-card img {
+  max-width: 100%;
+  height: auto;
+}
+

@@ -8,6 +8,7 @@ import {
 } from '@shopify/hydrogen';
 import {useVariantUrl} from '~/lib/variants';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import FilterForm from '~/components/FilterForm';
 
 /**
  * @type {MetaFunction<typeof loader>}
@@ -41,14 +42,27 @@ async function loadCriticalData({context, params, request}) {
     pageBy: 8,
   });
 
+  // Extract query parameters for filtering
+  const urlParams = new URLSearchParams(request.url.split('?')[1]);
+  const minPrice = parseFloat(urlParams.get('minPrice')) || 0;
+  const maxPrice = parseFloat(urlParams.get('maxPrice')) || 10000; // Set a default max price
+  const sort = urlParams.get('sort') || '';
+  console.log(sort);
+  const availabilityParam = urlParams.get('availability'); // Get availability from URL
+  let availability = true; // Default value for availability
+
+  if (availabilityParam === 'in_stock') {
+    availability = true; // If availability is 'in_stock', set to true
+  } else {
+    availability = false; // If not 'in_stock', set to false
+  }
   if (!handle) {
     throw redirect('/collections');
   }
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
+      variables: {handle, minPrice, maxPrice, ...paginationVariables},
     }),
   ]);
 
@@ -72,15 +86,14 @@ async function loadCriticalData({context, params, request}) {
 function loadDeferredData({context}) {
   return {};
 }
-
 export default function Collection() {
   /** @type {LoaderReturnData} */
-  const {collection} = useLoaderData();
-
+  const { collection } = useLoaderData();
   return (
     <div className="collection">
       <h1>{collection.title}</h1>
       <p className="collection-description">{collection.description}</p>
+      <FilterForm />
       <PaginatedResourceSection
         connection={collection.products}
         resourcesClassName="products-grid"
@@ -173,11 +186,13 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
 `;
 
-// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
+// Updated COLLECTION_QUERY to accept minPrice and maxPrice parameters
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
   query Collection(
     $handle: String!
+    $minPrice: Float
+    $maxPrice: Float
     $country: CountryCode
     $language: LanguageCode
     $first: Int
@@ -193,6 +208,7 @@ const COLLECTION_QUERY = `#graphql
       products(
         first: $first,
         last: $last,
+        filters: { price: { min: $minPrice, max: $maxPrice }},
         before: $startCursor,
         after: $endCursor
       ) {
